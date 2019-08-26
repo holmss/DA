@@ -46,7 +46,7 @@ void learn(std::string inp_file, std::string stats_file)
 
     if(!f_stats)
     {
-        std::cerr << "Can`t create or open file, please try another name\n";
+        std::cerr << "Can`t create or open file " << stats_file <<", please try again\n";
         exit(CANT_OPEN_FILE);
     }
 
@@ -67,7 +67,7 @@ void learn(std::string inp_file, std::string stats_file)
 
         char * tmp = strtok(s, "\t");
 
-        std::vector<std::string> lexem_container;
+        std::vector<std::string> lexem_container; //a full string received from the file
         std::vector<std::string> request; //splited request - separate words from request
 
         while(tmp)
@@ -120,7 +120,6 @@ void learn(std::string inp_file, std::string stats_file)
 
     //writing to file: done-------------------------------------------------------
 
-
     for (word w : dictionary)
     {
         f_stats <<  w.first << "\t"
@@ -133,11 +132,101 @@ void learn(std::string inp_file, std::string stats_file)
 
 void correct(std::string stats_file, std::string inp_file, std::string out_file)
 {
-    //checking files: in progress-------------------------------------------------
-    std::cout << "correcting...\n";
-    // std::cout << stats_file << " " << inp_file << " " << out_file << "\n";
+    //checking files: done--------------------------------------------------------
+
+    bool stdinp = false;
+
+    std::ifstream f_inp;
+    f_inp.open(inp_file.c_str(), std::ios_base::in);
+    
+    if(!f_inp)
+    {
+        std::cerr << "Can`t open file, make sure file " << inp_file << " exists and try again\n";
+        exit(CANT_OPEN_FILE);
+    }
+
+    std::ifstream f_stats;
+    f_stats.open(stats_file.c_str(), std::ios_base::in);
+
+    if(!f_stats)
+    {
+        std::cerr << "Can`t open file, make sure file " << stats_file << " exists and try again\n";
+        exit(CANT_OPEN_FILE);
+    }
+
+    std::ofstream f_out;
+    f_out.open(out_file.c_str(), std::ios_base::out);
+
+    if(!f_out)
+    {
+        std::cerr << "Can`t create or open file " << out_file <<", please try again\n";
+        exit(CANT_OPEN_FILE);
+    }
+
+    //parsing the dictionary: in progress-----------------------------------------
+
+    std::string buf;
+    std::vector<word> dictionary;
+
+    while(!f_stats.eof())
+    {
+        getline(f_stats, buf);
+
+        if (buf == "")
+            break;
+
+        char * s = new char[buf.size() + 1];
+
+        strcpy(s, buf.c_str());
+
+        char * tmp = strtok(s, "\t");
+
+        std::vector<std::string> lexem_container;
+
+        while(tmp)
+        {
+            lexem_container.push_back(tmp);
+            tmp = strtok(NULL, "\t");
+        }
+
+        for (std::string s : lexem_container)
+            std::cout << s << "\n";
+
+        std::cout << "\n";
+
+        word wrd;
+
+        wrd.first = lexem_container[0];
+
+        if(lexem_container.size() == 3)
+        {
+            wrd.second = lexem_container[1];
+            wrd.count = std::stoi(lexem_container[2]);
+        }
+        else
+        {
+            wrd.second = "";
+            wrd.count = std::stoi(lexem_container[1]);
+        }
+
+        std::cout << "f: " << wrd.first << " s: " << wrd.second << " c: " << wrd.count << "\n";
+
+        dictionary.push_back(wrd);
+    }
+
+    //dct out:
+
+    for (word w : dictionary)
+    {
+        std::cout << "first: " << w.first 
+        << "\t second: " << w.second
+        << "\t count: " << w.count << "\n";
+    }
 
     //correcting mistakes: in progress--------------------------------------------
+
+
+    std::cout << "Maybe you mean:\n";
 }
 
 
@@ -154,8 +243,6 @@ int main(int argc, char * argv[])
 
     std::string inp_file, stats_file, out_file;
     bool inp = false, stats = false, out = false;
-
-    // std::cout << argc << "\n";
 
     if(argc < 2)
     {
