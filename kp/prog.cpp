@@ -31,7 +31,7 @@ void learn(std::string inp_file, std::string stats_file)
     //checking files: done--------------------------------------------------------
 
     std::cout << "learning ███▒▒▒▒▒▒▒\n\n";
-    // std::cout << inp_file << " " << stats_file << "\n";
+    
     std::ifstream f_inp;
     f_inp.open(inp_file.c_str(), std::ios_base::in);
     
@@ -54,17 +54,12 @@ void learn(std::string inp_file, std::string stats_file)
     //memory leak!!!
 
     std::string buf;
-    std::vector<std::vector<std::string>> request_list; //request list contains vectors with splited requests
-
-    // std::istringstream ist(buf);
-    // std::string tmp;
+    std::vector<word> dictionary;
 
     getline(f_inp,buf);
     while (!f_inp.eof())
     {
         getline(f_inp,buf);
-
-        // std::cout << "buf: " << buf << "\n";
 
         char * s = new char[buf.size() + 1];
 
@@ -77,8 +72,6 @@ void learn(std::string inp_file, std::string stats_file)
 
         while(tmp)
         {
-            // std::cout << "tmp: " << tmp << "\n";
-
             lexem_container.push_back(tmp);
             tmp = strtok(NULL, "\t");
         }
@@ -91,46 +84,21 @@ void learn(std::string inp_file, std::string stats_file)
         while (ist >> token)
             request.push_back(token);
 
-        request_list.push_back(request);
-    }
-
-    for (std::vector<std::string> n : request_list) 
-    {
-        for (std::string s : n)
-        {
-            std::cout << s << "\t";
-        }
-        std::cout << "\n";
-    }
-    std::cout << "\n";
-
-    //making dictionary: done-----------------------------------------------------
-
-    std::vector<word> dictionary;
-
-    for (std::vector<std::string> req : request_list) 
-    {
-        for (int i = 0; i < req.size(); i++)
+        for (int i = 0; i < request.size(); i++)
         {
             word wd;
             wd.count = 1;
 
-            wd.first = req[i];
-            if (i != req.size()-1)
-                wd.second = req[i+1];
+            wd.first = request[i];
+            if (i != request.size()-1)
+                wd.second = request[i+1];
             else
                 wd.second = "";
-
-            // std::cout << wd.first << " " << wd.second << " " << wd.count << "\n";
-
-            // if (dictionary.size() == 0)
-            //     dictionary.push_back(wd);
 
             int j = 0;
 
             for (j = 0; j < dictionary.size(); j++)
             {
-                // std::cout << dictionary[j].first << " " << dictionary[j].second << " " << dictionary[j].count << "\n";
                 if (dictionary[j].first == wd.first && dictionary[j].second == wd.second)
                 {
                     dictionary[j].count++;
@@ -139,7 +107,7 @@ void learn(std::string inp_file, std::string stats_file)
             }  
 
             if(j == dictionary.size())
-                dictionary.push_back(wd);          
+                dictionary.push_back(wd);  
         }
     }
 
