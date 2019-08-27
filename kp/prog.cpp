@@ -16,6 +16,14 @@ typedef struct _word
     int count;
 } word;
 
+typedef struct  _right
+{
+    std::string tok;
+    int dist;
+} right;
+
+std::vector<word> dictionary;
+
 void usage()
 {
     //man: done-------------------------------------------------------------------
@@ -54,7 +62,7 @@ void learn(std::string inp_file, std::string stats_file)
     //memory leak!!!
 
     std::string buf;
-    std::vector<word> dictionary;
+    // std::vector<word> dictionary;
 
     getline(f_inp,buf);
     while (!f_inp.eof())
@@ -130,6 +138,44 @@ void learn(std::string inp_file, std::string stats_file)
     std::cout << "\ndone ✔\n";
 }
 
+int levenshtein (const std::string source, const std::string target)
+{
+    if(source.length() > target.length())
+        return levenshtein(target, source);
+
+    const int min_size = source.length(), max_size = target.length();
+    std::vector<int> distance(min_size + 1);
+
+    for(int i = 0; i <= min_size; ++i)
+        distance[i] = i;
+
+    for(int j = 1; j <= max_size; ++j)
+    {
+        int prev = distance[0], prev_save;
+        ++distance[0];
+
+        for(int i = 1; i <= min_size; ++i)
+        {
+            prev_save = distance[i];
+
+            if(source[i - 1] == target[j - 1])
+                distance[i] = prev;
+
+            else
+                distance[i] = std::min(std::min(distance[i - 1], distance[i]), prev) + 1;
+
+            prev = prev_save;
+        }
+    }
+
+    return distance[min_size];
+}
+
+// std::string viterbi(std::vector<std::vector<right>> correct_req)
+// {
+//     /* code */
+// }
+
 void correct(std::string stats_file, std::string inp_file, std::string out_file)
 {
     //checking files: done--------------------------------------------------------
@@ -163,10 +209,10 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
         exit(CANT_OPEN_FILE);
     }
 
-    //parsing the dictionary: in progress-----------------------------------------
+    //parsing the dictionary: done------------------------------------------------
 
     std::string buf;
-    std::vector<word> dictionary;
+    // std::vector<word> dictionary;
 
     while(!f_stats.eof())
     {
@@ -189,10 +235,10 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
             tmp = strtok(NULL, "\t");
         }
 
-        for (std::string s : lexem_container)
-            std::cout << s << "\n";
+        // for (std::string s : lexem_container)
+        //     std::cout << s << "\n";
 
-        std::cout << "\n";
+        // std::cout << "\n";
 
         word wrd;
 
@@ -209,24 +255,89 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
             wrd.count = std::stoi(lexem_container[1]);
         }
 
-        std::cout << "f: " << wrd.first << " s: " << wrd.second << " c: " << wrd.count << "\n";
+        // std::cout << "f: " << wrd.first << " s: " << wrd.second << " c: " << wrd.count << "\n";
 
         dictionary.push_back(wrd);
     }
 
     //dct out:
 
-    for (word w : dictionary)
-    {
-        std::cout << "first: " << w.first 
-        << "\t second: " << w.second
-        << "\t count: " << w.count << "\n";
-    }
+    // for (word w : dictionary)
+    // {
+    //     std::cout << "first: " << w.first 
+    //     << "\t second: " << w.second
+    //     << "\t count: " << w.count << "\n";
+    // }
 
     //correcting mistakes: in progress--------------------------------------------
 
+    while(!f_inp.eof())
+    {
+        getline(f_inp, buf);
+        std::cout << buf << "\n\n";
 
-    std::cout << "Maybe you mean:\n";
+        std::istringstream ist(buf);
+
+        // std::vector<std::string> words;
+        std::vector<right> right_words;
+        std::vector<std::vector<right>> right_request;
+
+        std::string token;
+
+        // int distance;
+        right rt;
+
+        //making vector of possible words for one request:
+
+        while(ist >> token)
+        {
+            // words.push_back(token);
+            
+            for(word w : dictionary)
+            {
+                rt.tok = w.first;
+                rt.dist = levenshtein(token, w.first);
+                
+                // std::cout << "rt.tok: " << rt.tok << "\n" << "rt.dist: " << rt.dist << "\n";
+
+                if(right_words.empty())
+                    right_words.push_back(rt);
+
+                else if(rt.dist < right_words[0].dist)
+                {
+                    // std::vector<right> temp; 
+                    // temp.push_back(rt);
+
+                    // right_words = temp;
+
+                    right_words.clear();
+                    right_words.push_back(rt);
+                }
+
+                else if(rt.dist == right_words[0].dist && rt.tok != right_words[0].tok)
+                    right_words.push_back(rt);
+            }
+
+            for(right rgt : right_words)
+                std::cout << "word: " << rgt.tok << " distance: " << rgt.dist << "\n";
+
+            std::cout << "\n";
+
+            right_request.push_back(right_words);
+
+            right_words.clear();
+        }
+
+        //trying to make right request:
+
+        // std::cout << "Maybe you mean: " << viterbi(right_request) << "\n";
+
+        // for(std::string s : words)
+        //     std::cout << s << " ";
+        // std::cout << "\n";
+    }
+
+    // std::cout << "Maybe you mean:\n";
 }
 
 
