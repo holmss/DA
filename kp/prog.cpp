@@ -59,10 +59,8 @@ void learn(std::string inp_file, std::string stats_file)
     }
 
     //parsing input file: done----------------------------------------------------
-    //memory leak!!!
 
     std::string buf;
-    // std::vector<word> dictionary;
 
     getline(f_inp,buf);
     while (!f_inp.eof())
@@ -173,17 +171,6 @@ int levenshtein (const std::string source, const std::string target)
 
 std::string viterbi(std::vector<std::vector<right>> correct_req)
 {
-    // if(correct_req.size() == 1)
-    //     return correct_req[0][0].tok;
-
-    // std::string cs = "";
-
-    // for(std::vector<right> vr : correct_req)
-    //     cs = cs + " " + vr[0].tok;
-
-    // return cs;
-
-    // std::vector<std::string> correct_v;
     std::string correct_string = "";
 
     bool found = false;
@@ -287,7 +274,6 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
     //parsing the dictionary: done------------------------------------------------
 
     std::string buf;
-    // std::vector<word> dictionary;
 
     while(!f_stats.eof())
     {
@@ -310,11 +296,6 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
             tmp = strtok(NULL, "\t");
         }
 
-        // for (std::string s : lexem_container)
-        //     std::cout << s << "\n";
-
-        // std::cout << "\n";
-
         word wrd;
 
         wrd.first = lexem_container[0];
@@ -330,21 +311,10 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
             wrd.count = std::stoi(lexem_container[1]);
         }
 
-        // std::cout << "f: " << wrd.first << " s: " << wrd.second << " c: " << wrd.count << "\n";
-
         dictionary.push_back(wrd);
     }
 
-    //dct out:
-
-    // for (word w : dictionary)
-    // {
-    //     std::cout << "first: " << w.first 
-    //     << "\t second: " << w.second
-    //     << "\t count: " << w.count << "\n";
-    // }
-
-    //correcting mistakes: in progress--------------------------------------------
+    //correcting mistakes: done---------------------------------------------------
 
     while(!f_inp.eof())
     {
@@ -353,38 +323,27 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
 
         std::istringstream ist(buf);
 
-        // std::vector<std::string> words;
         std::vector<right> right_words;
         std::vector<std::vector<right>> right_request;
 
         std::string token;
 
-        // int distance;
         right rt;
 
         //making vector of possible words for one request:
 
         while(ist >> token)
-        {
-            // words.push_back(token);
-            
+        {  
             for(word w : dictionary)
             {
                 rt.tok = w.first;
                 rt.dist = levenshtein(token, w.first);
-                
-                // std::cout << "rt.tok: " << rt.tok << "\n" << "rt.dist: " << rt.dist << "\n";
 
                 if(right_words.empty())
                     right_words.push_back(rt);
 
                 else if(rt.dist < right_words[0].dist)
                 {
-                    // std::vector<right> temp; 
-                    // temp.push_back(rt);
-
-                    // right_words = temp;
-
                     right_words.clear();
                     right_words.push_back(rt);
                 }
@@ -392,11 +351,6 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
                 else if(rt.dist == right_words[0].dist && rt.tok != right_words[0].tok)
                     right_words.push_back(rt);
             }
-
-            // for(right rgt : right_words)
-            //     std::cout << "word: " << rgt.tok << " distance: " << rgt.dist << "\n";
-
-            // std::cout << "\n";
 
             right_request.push_back(right_words);
 
@@ -406,15 +360,8 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
         //trying to make right request:
 
         std::cout << "Maybe you mean: " << viterbi(right_request) << "\n\n";
-
-        // for(std::string s : words)
-        //     std::cout << s << " ";
-        // std::cout << "\n";
     }
-
-    // std::cout << "Maybe you mean:\n";
 }
-
 
 void mktest(std::string source)
 {
