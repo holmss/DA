@@ -171,10 +171,85 @@ int levenshtein (const std::string source, const std::string target)
     return distance[min_size];
 }
 
-// std::string viterbi(std::vector<std::vector<right>> correct_req)
-// {
-//     /* code */
-// }
+std::string viterbi(std::vector<std::vector<right>> correct_req)
+{
+    // if(correct_req.size() == 1)
+    //     return correct_req[0][0].tok;
+
+    // std::string cs = "";
+
+    // for(std::vector<right> vr : correct_req)
+    //     cs = cs + " " + vr[0].tok;
+
+    // return cs;
+
+    // std::vector<std::string> correct_v;
+    std::string correct_string = "";
+
+    bool found = false;
+    
+    word correct_word;
+    correct_word.count = 0;
+
+    if(correct_req.size() == 1)
+    {
+        for(int i = 0; i < correct_req[0].size(); ++i)
+            for(word w : dictionary)
+                if(w.first == correct_req[0][i].tok && w.count > correct_word.count)
+                {
+                    correct_word.first = w.first;
+                    correct_word.count = w.count;
+                    found = true;
+                }
+
+        return correct_word.first;
+    }
+
+    for(int i = 0; i < correct_req[0].size(); ++i)
+    {
+        correct_word.count = 0;
+        for(int j = 0; j < correct_req[1].size(); ++j)
+            for(word w : dictionary)
+            {
+                if(w.first == correct_req[0][i].tok && w.second == correct_req[1][j].tok && w.count > correct_word.count)
+                {
+                    correct_word.first = w.first;
+                    correct_word.second = w.second;
+                    correct_word.count = w.count;
+                    found = true;
+                }
+            }
+    }
+
+    if(!found)
+    {
+        for(std::vector<right> r : correct_req)
+            correct_string = correct_string + " " + r[0].tok;
+
+        return correct_string;
+    }
+
+    correct_string = correct_string + " " + correct_word.first + " " + correct_word.second;
+    std::string tmp = correct_word.second;
+
+    for(int i = 2; i < correct_req.size(); ++i)
+    {
+        correct_word.count = 0;
+        for(int j = 0; j < correct_req[i].size(); ++j)
+            for(word w : dictionary)
+            {
+                if(tmp == w.first && correct_req[i][j].tok == w.second && w.count > correct_word.count)
+                {
+                    correct_word.second = w.second;
+                    correct_word.count = w.count;
+                }
+            }
+        tmp = correct_word.second;
+        correct_string = correct_string + " " + correct_word.second;
+    }
+
+    return correct_string;
+}
 
 void correct(std::string stats_file, std::string inp_file, std::string out_file)
 {
@@ -318,10 +393,10 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
                     right_words.push_back(rt);
             }
 
-            for(right rgt : right_words)
-                std::cout << "word: " << rgt.tok << " distance: " << rgt.dist << "\n";
+            // for(right rgt : right_words)
+            //     std::cout << "word: " << rgt.tok << " distance: " << rgt.dist << "\n";
 
-            std::cout << "\n";
+            // std::cout << "\n";
 
             right_request.push_back(right_words);
 
@@ -330,7 +405,7 @@ void correct(std::string stats_file, std::string inp_file, std::string out_file)
 
         //trying to make right request:
 
-        // std::cout << "Maybe you mean: " << viterbi(right_request) << "\n";
+        std::cout << "Maybe you mean: " << viterbi(right_request) << "\n\n";
 
         // for(std::string s : words)
         //     std::cout << s << " ";
